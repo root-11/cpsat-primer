@@ -1,4 +1,5 @@
-fastapi
+fastapi[standard]
 ortools
 redis
 rq
+uvicorn[standard]
