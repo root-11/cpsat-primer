@@ -58,6 +58,14 @@ Additional resources on mathematical modeling (not CP-SAT specific):
 - [Model Building in Mathematical Programming by H. Paul Williams](https://www.wiley.com/en-us/Model+Building+in+Mathematical+Programming%2C+5th+Edition-p-9781118443330):
   An extensive guide to mathematical modeling techniques.
 
+> [!TIP]
+>
+> For getting started with implementing optimization models in general, I highly
+> recommend the blog post
+> [The Art Of Not Making It An Art](https://www.gurobi.com/resources/optimization-modeling-the-art-of-not-making-it-an-art/).
+> It excellently summarizes the fundamental principles of successfully managing
+> an optimization project, independent of the concrete language or solver.
+
 ---
 
 **Elements:**
@@ -1015,11 +1023,12 @@ model.add_linear_expression_in_domain(10 * x + 5 * y, domain)
 ### Element/Array Constraints
 
 Before exploring specialized constraints, let us examine the last of the generic
-ones. The element constraint facilitates accessing the value of a variable
-within an array using another variable as the index. Accessing a variable in an
-array with a constant index is straightforward; however, integrating a variable
-index into your model adds complexity. This constraint can also be use to ensure
-that a variable matches the value at a specific array position.
+ones. The element constraint facilitates accessing the value of a variable (or
+since ortools 9.12, a linear expression) within an array using another variable
+as the index. Accessing a variable in an array with a constant index is
+straightforward; however, integrating a variable index into your model adds
+complexity. This constraint can also be used to ensure that a variable matches
+the value at a specific array position.
 
 ```python
 model = cp_model.CpModel()
@@ -1033,7 +1042,8 @@ index_var = model.new_int_var(0, len(var_array) - 1, "index")
 value_at_index_var = model.new_int_var(-100, 100, "value_at_index")
 
 # Apply the element constraint to link the index and value variables.
-model.add_element(variables=var_array, index=index_var, target=value_at_index_var)
+model.add_element(expressions=var_array, index=index_var, target=value_at_index_var)
+# CAVEAT: Before ortools 9.12, it was `variables=` instead of `expressions=`.
 ```
 
 Examples of feasible variable assignments:

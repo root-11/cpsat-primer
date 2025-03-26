@@ -93,6 +93,12 @@ might have distracted from the patterns themselves.
 > Regularly running `ruff check --fix` and `ruff format` can enhance your code
 > quality with minimal effort. Optimally, you will integrate it via a
 > [pre-commit hook](https://pre-commit.com/).
+>
+> For getting started with implementing optimization models in general, I highly
+> recommend the blog post
+> [The Art Of Not Making It An Art](https://www.gurobi.com/resources/optimization-modeling-the-art-of-not-making-it-an-art/).
+> It excellently summarizes the fundamental principles of successfully managing
+> an optimization project, independent of the concrete language or solver.
 
 ### Simple Function
 
@@ -692,6 +698,10 @@ goods' value. However, after computing and presenting the solution, we might be
 asked to find an alternative solution that does not fill the truck as much, even
 if it means accepting up to a 5% decrease in value.
 
+|                              [![xkcd grapfruit](https://imgs.xkcd.com/comics/fuck_grapefruit.png)](https://xkcd.com/388/)                              |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------: |
+| Which fruit is the best one? Many problems are multi-objective and there is no clear single objective. By [xkcd](https://xkcd.com/388/) (CC BY-NC 2.5) |
+
 To handle this, we can optimize in two phases. First, we maximize the value
 under the weight constraint. Next, we add a constraint that the value must be at
 least 95% of the initial solution's value and change the objective to minimize
@@ -1239,5 +1249,9 @@ signals while the solver is running.
 | ![Interactive Solver with Streamlit using multiprocessing](https://github.com/d-krupke/cpsat-primer/blob/main/images/streamlit_solver.gif) |
 | :----------------------------------------------------------------------------------------------------------------------------------------: |
 |                                _Using multiprocessing, one can build a responsive interface for a solver._                                 |
+
+[@oulianov](https://github.com/oulianov) deployed it
+[here](https://cpsat-embeddings-demo.streamlit.app/) for you to try out in your
+browser.
 
 ---

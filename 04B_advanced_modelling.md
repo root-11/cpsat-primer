@@ -394,7 +394,9 @@ model.add_cumulative(
 > scheduling problem with a fixed number of slots, you can often model this
 > problem much more efficiently using simple Boolean variables and constraints.
 > Especially if you can use domain knowledge to find clusters of meetings that
-> cannot overlap, this can be much more efficient.
+> cannot overlap, this can be much more efficient. If the scheduling is
+> dominated by the transitions, your scheduling problem may actually be a
+> routing problems, for which the `add_circuit` constraint is more suitable.
 
 Let us examine a few examples of how to use these constraints effectively.
 

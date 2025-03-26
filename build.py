@@ -11,9 +11,9 @@ from pathlib import Path
 
 def _create_pretty_warning_box(msg):
     return f"""
-<table style="width: 100%; border: 1px solid black;">
-  <tr>
-    <td>
+<table style="width: 100%; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+<tr>
+<td style="padding: 10px;">
 <div style="display: flex; justify-content: space-between; align-items: center;">
   <div style="width: 10%;">
     <img src="https://raw.githubusercontent.com/d-krupke/cpsat-primer/main/images/warning_platypus.webp" alt="Description of image" style="width: 100%;">
@@ -32,9 +32,9 @@ def _create_pretty_warning_box(msg):
 
 def _create_tip_box(msg):
     return f"""
-<table style="width: 100%; border: 1px solid black;">
-  <tr>
-    <td>
+<table style="width: 100%; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+<tr>
+<td style="padding: 10px;">
 <div style="display: flex; justify-content: space-between; align-items: center;">
   <div style="width: 10%;">
     <img src="https://raw.githubusercontent.com/d-krupke/cpsat-primer/main/images/idea_platypus.webp" alt="Description of image" style="width: 100%;">
@@ -53,10 +53,10 @@ def _create_tip_box(msg):
 
 def _create_info_box(msg):
     return f"""
-<table style="width: 100%; border: 1px solid black;">
-    <tr>
-        <td>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+<table style="width: 100%; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+<tr>
+<td style="padding: 10px;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="width: 10%;">
                     <img src="https://raw.githubusercontent.com/d-krupke/cpsat-primer/main/images/info_platypus.webp" alt="Description of image" style="width: 100%;">
                 </div>
@@ -70,6 +70,104 @@ def _create_info_box(msg):
   </tr>
 </table>
     """
+
+
+def _create_reference_box(msg):
+    return f"""
+<table style="width: 100%; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+<tr>
+<td style="padding: 10px;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="width: 10%;">
+                    <img src="https://raw.githubusercontent.com/d-krupke/cpsat-primer/main/images/book_platypus.webp" alt="Description of image" style="width: 100%;">
+                </div>
+                <div style="width: 90%;">
+
+{msg}
+
+  </div>
+</div>
+    </td>
+  </tr>
+</table>
+    """
+
+
+def _create_video_box(msg):
+    return f"""
+<table style="width: 100%; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+<tr>
+<td style="padding: 10px;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+
+<div style="width: 85%;">
+{msg}
+</div>
+<div style="width: 15%; padding-right: 10px;">
+<img src="https://raw.githubusercontent.com/d-krupke/cpsat-primer/main/images/tv_platypus.webp" alt="Description of image" style="width: 100%; border-radius: 4px;">
+</div>
+</div>
+</td>
+</tr>
+</table>
+    """
+
+
+def replace_video_boxes(content):
+    """
+    A video box starts with `> :video:` and ends with a line that does not start with `>`.
+    """
+    lines = content.split("\n")
+    new_content = ""
+    collect_video = False
+    video_msg = ""
+    for line in lines:
+        if line.startswith("> :video:"):
+            collect_video = True
+            video_msg += line[len("> :video:") :] + "\n"
+        elif collect_video:
+            if line == ">":
+                continue
+            if line.startswith("> "):
+                video_msg += line[len("> ") :] + "\n"
+            else:
+                new_content += _create_video_box(video_msg)
+                new_content += "\n"
+                collect_video = False
+                video_msg = ""
+                new_content += line + "\n"
+        else:
+            new_content += line + "\n"
+    return new_content
+
+
+def replace_reference_boxes(content):
+    """
+    A reference box starts with `> :reference:` and ends with a line that does not start with `>`.
+    For github markdown, it just converts to an info box.
+    """
+    lines = content.split("\n")
+    new_content = ""
+    collect_reference = False
+    reference_msg = ""
+    for line in lines:
+        if line.startswith("> :reference:"):
+            collect_reference = True
+            reference_msg += line[len("> :reference:") :] + "\n"
+        elif collect_reference:
+            if line == ">":
+                continue
+            if line.startswith("> "):
+                reference_msg += line[len("> ") :] + "\n"
+            else:
+                new_content += _create_reference_box(reference_msg)
+                new_content += "\n"
+                collect_reference = False
+                reference_msg = ""
+                new_content += line + "\n"
+        else:
+            new_content += line + "\n"
+    return new_content
 
 
 def replace_warning_boxes(content):
@@ -181,6 +279,8 @@ def convert_for_mdbook(content):
     content = replace_warning_boxes(content)
     content = replace_tip_boxes(content)
     content = replace_info_boxes(content)
+    content = replace_reference_boxes(content)
+    content = replace_video_boxes(content)
     # replace all `:warning:` with the unicode character for a warning sign.
     content = content.replace(":warning:", "⚠️")
 
@@ -194,6 +294,12 @@ def convert_for_mdbook(content):
                 md_path = file
                 break
         return f"(./{md_path})" if Path(md_path).exists() else f"(#{match.group(1)})"
+
+    explicit_replacements = {
+        "#chapters-machine-learning": "./chapters/machine_learning.md",
+    }
+    for key, value in explicit_replacements.items():
+        content = content.replace(key, value)
 
     content = re.sub(
         r"\(#(.*?)\)",
@@ -253,6 +359,9 @@ def convert_for_readme(content: str) -> str:
         if "<!-- STOP_SKIP_FOR_README -->" in line:
             skip = False
     content = "\n".join(new_lines)
+    # replace all `> :reference:` with `> [!NOTE]`.
+    content = content.replace("> :reference:", "> [!NOTE]")
+    content = content.replace("> :video:", "> [!TIP]")
     return content
 
 
@@ -271,6 +380,7 @@ if __name__ == "__main__":
         "03_big_picture.md",
         "06_coding_patterns.md",
         "building_an_optimization_api.md",
+        "chapters/machine_learning.md",
         "08_benchmarking.md",
         "09_lns.md",
     ]
@@ -289,6 +399,6 @@ if __name__ == "__main__":
                 f.write(f"<!-- {file} -->\n")
                 f.write(convert_for_readme(content))
                 f.write("\n\n")
-                Path("./.mdbook/").mkdir(parents=True, exist_ok=True)
+                (Path("./.mdbook/") / file).parent.mkdir(parents=True, exist_ok=True)
                 with open(Path("./.mdbook/") / file, "w") as book_file:
                     book_file.write(convert_for_mdbook(content))
